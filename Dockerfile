@@ -1,20 +1,20 @@
 FROM openjdk:8-jre-slim as builder
 WORKDIR /opt
-ENV HADOOP_VERSION=3.3.1
-ENV METASTORE_VERSION=3.1.2
-ENV PSQL_CONN_VERSION=42.3.1
-ENV LOG4J_WEB_VERSION=2.17.1
-ENV RM_HADOOP_LOG4J_VERSION=1.7.30
+ENV HADOOP_VERSION=3.3.4
+ENV METASTORE_VERSION=3.1.3
+ENV PSQL_CONN_VERSION=42.6.0
+ENV LOG4J_WEB_VERSION=2.20.0
+ENV RM_HADOOP_LOG4J_VERSION=2.0.7
 ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
 ENV HIVE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
 RUN apt update && \
-    apt install -y curl && \
-    # add `hadoop`
-    curl -L https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar zxf - && \
-    # remove the redundant `log4j-slf4j` jar -- redundant to one in `hive-standalone-metastore`
-    rm ${HADOOP_HOME}/share/hadoop/common/lib/slf4j-log4j12-${RM_HADOOP_LOG4J_VERSION}.jar && \
-    # add `hive-standalone-metastore`
-    curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar zxf - && \
+    apt install -y curl
+
+# add `hadoop`
+RUN curl -L https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar zxf - 
+
+# add `hive-standalone-metastore`
+RUN curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar zxf - && \
     # add the `hive-metastore` jar
     curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-metastore/${METASTORE_VERSION}/hive-metastore-${METASTORE_VERSION}.jar -o hive-metastore-${METASTORE_VERSION}.jar && \
     cp hive-metastore-${METASTORE_VERSION}.jar ${HIVE_HOME}/lib/ && \
@@ -30,8 +30,8 @@ RUN apt update && \
 
 FROM openjdk:8-jre-slim as runner
 WORKDIR /opt
-ENV HADOOP_VERSION=3.3.1
-ENV METASTORE_VERSION=3.1.2
+ENV HADOOP_VERSION=3.3.4
+ENV METASTORE_VERSION=3.1.3
 ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
 ENV HIVE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
 COPY --from=builder ${HIVE_HOME} ${HIVE_HOME}
